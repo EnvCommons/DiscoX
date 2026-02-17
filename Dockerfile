@@ -16,10 +16,6 @@ RUN uv venv --python 3.11
 COPY requirements.txt /app/
 RUN uv pip install -r /app/requirements.txt
 
-# Download DiscoX dataset (1.98 MB)
-RUN curl -L -o discox.parquet \
-    https://huggingface.co/datasets/ByteDance-Seed/DiscoX/resolve/main/data/train-00000-of-00001.parquet
-
 # Copy code
 COPY discox.py server.py /app/
 
