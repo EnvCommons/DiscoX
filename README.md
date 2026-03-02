@@ -1,256 +1,97 @@
-# DiscoX - Professional Translation Evaluation Environment
+# DiscoX
 
-DiscoX is an OpenReward environment for evaluating translation quality between English and Chinese using expert-designed quality rubrics and LLM-based grading.
+[![⭐ OpenReward Environment](https://img.shields.io/badge/%E2%AD%90%20OpenReward-Environment-f7e6cc)](https://openreward.ai/GeneralReasoning/DiscoX)
+[![Hugging Face Dataset](https://img.shields.io/badge/Hugging%20Face-Dataset-orange)](https://huggingface.co/datasets/ByteDance-Seed/DiscoX)
 
-## Overview
+## Description
 
-- **Dataset**: [ByteDance-Seed/DiscoX](https://huggingface.co/datasets/ByteDance-Seed/DiscoX)
-- **Tasks**: 200 professional translation tasks (bidirectional EN↔ZH)
-- **Domains**: Academic papers, humanities, social sciences, and more
-- **Evaluation**: Multi-rubric LLM grading using GPT-5-mini
-- **Rubrics**: Expert-designed criteria covering terminology, tone, cultural nuance, and fluency
+DiscoX is an OpenReward environment for evaluating professional translation quality between English and Chinese. Agents are given a source text and must produce a translation that is graded against hidden expert-designed rubrics using LLM-based evaluation. The environment covers 200 bidirectional (EN-to-ZH and ZH-to-EN) translation tasks spanning academic papers, humanities, social sciences, and technical documents.
 
-## Features
+## Capabilities
 
-- **Bilingual Support**: Automatically detects translation direction (EN→ZH or ZH→EN)
-- **Multi-Rubric Evaluation**: Each translation graded against multiple expert rubrics
-- **Parallel Grading**: Efficient concurrent evaluation of all rubrics
-- **Detailed Feedback**: Comprehensive criterion-by-criterion analysis
-- **Normalized Scoring**: Final reward scaled to 0.0-1.0 range
+- Professional-grade translation between English and Chinese
+- Domain-specific terminology usage across academic and technical fields
+- Cultural and contextual adaptation in translation
+- Register and tone matching for varied document types
 
-## Installation
+## Compute Requirements
 
-### Local Development
+DiscoX is a single-turn environment with no special compute requirements. Each task consists of one prompt and one tool call. LLM-based grading is performed server-side via the OpenAI API.
 
-```bash
-# Clone the repository
-git clone https://github.com/EnvCommons/discox.git
-cd discox
+## License
 
-# Install dependencies
-pip install -r requirements.txt
+[ORLv1](https://openreward.ai/orlv1.md).
 
-# Download dataset
-python -c "from datasets import load_dataset; load_dataset('ByteDance-Seed/DiscoX', split='train').to_parquet('discox.parquet')"
+## Tasks
 
-# Run server
-python server.py
-```
+There are 200 tasks in a single `train` split. Each task presents the agent with a source text to translate, along with domain information and translation instructions. The translation direction (EN-to-ZH or ZH-to-EN) is automatically detected based on the character composition of the source text (greater than 30% Chinese characters indicates ZH-to-EN).
 
-### Docker
+Tasks span the following domains:
 
-```bash
-# Build image
-docker build -t discox:latest .
+- Academic papers
+- Humanities
+- Social sciences
+- Technical documents
 
-# Run container
-docker run -p 8080:8080 discox:latest
-```
+Each task specification includes:
 
-## Usage
-
-### Testing with Agent
-
-```bash
-export OPENAI_API_KEY=sk-...
-python test_agent.py
-```
-
-### Using OpenReward SDK
-
-```python
-from openreward import AsyncOpenReward
-
-or_client = AsyncOpenReward()
-environment = or_client.environments.get(name="EnvCommons/discox")
-
-tasks = await environment.list_tasks(split="train")
-tools = await environment.list_tools(format="openai")
-
-# Create session with secrets
-async with environment.session(
-    task=tasks[0],
-    secrets={"openai_api_key": "sk-..."}
-) as session:
-    prompt = await session.get_prompt()
-    # ... agent interaction ...
-```
-
-## Environment Structure
-
-### File Organization
-
-```
-discox/
-├── discox.py          # Main environment class with multi-rubric grading
-├── server.py          # Server wrapper
-├── test_agent.py      # Local testing script
-├── requirements.txt   # Python dependencies
-├── Dockerfile         # Container build
-└── README.md          # This file
-```
-
-### Task Specification
-
-Each task contains:
-- `id`: Unique task identifier (e.g., "discox_001")
-- `direction`: Translation direction ("en_to_zh" or "zh_to_en")
+- `id`: Unique task identifier (e.g., `discox_000`)
+- `direction`: Translation direction (`en_to_zh` or `zh_to_en`)
 - `primary_domain`: Main content domain
 - `secondary_domain`: Specific subdomain
 
-### Tool: submit_translation
+## Reward Structure
 
-Submit your translation for evaluation:
+DiscoX uses continuous rewards in the range 0.0 to 1.0. Each translation is graded against multiple expert-designed rubrics that are hidden from the agent. Rubrics are extracted from the dataset's `reference_list` field, which contains structured evaluation criteria (typically in the Chinese "kaodian" format).
 
-```python
-{
-    "translation": "Your complete translation of the source text"
-}
-```
+Each rubric criterion is evaluated independently by gpt-5-mini, producing a score from 0.0 to 1.0. The final reward is the sum of all rubric scores divided by the total possible points:
 
-Returns:
-- Multi-rubric feedback with criterion-by-criterion analysis
-- Overall score and normalized reward (0.0-1.0)
-- Detailed grader analysis for each rubric
+$$\text{reward} = \frac{\sum_{i=1}^{n} \text{score}_i}{\sum_{i=1}^{n} \text{max\_points}_i}$$
 
-## Evaluation Methodology
+All rubrics are weighted equally at 1.0 point each. Grading covers terminology accuracy, semantic fidelity, cultural appropriateness, tone/register, and fluency.
 
-### Rubric Extraction
+## Data
 
-Expert rubrics are automatically extracted from the `reference_list` field in Chinese:
-- Pattern 1: "考点N" format (most common)
-- Pattern 2: Numbered lists (1. 2. etc.)
-- Fallback: Holistic quality assessment
+The dataset is sourced from [ByteDance-Seed/DiscoX](https://huggingface.co/datasets/ByteDance-Seed/DiscoX) on HuggingFace and stored as `discox.parquet`. It contains 200 professional translation tasks with the following columns:
 
-### Grading Process
-
-1. **Parallel Evaluation**: All rubrics graded concurrently using GPT-5-mini
-2. **Score Extraction**: Multi-stage parsing with fallback handling
-3. **Aggregation**: Scores summed and normalized to 0.0-1.0 range
-4. **Feedback Generation**: Detailed criterion-by-criterion results
-
-### Grading Criteria
-
-Each rubric evaluates:
-- Terminology accuracy
-- Semantic fidelity
-- Cultural appropriateness
-- Tone and register
-- Overall fluency
-
-### Score Scale
-
-- **1.0**: Excellent (fully meets criterion)
-- **0.7-0.9**: Good (mostly meets with minor issues)
-- **0.4-0.6**: Fair (partially meets)
-- **0.1-0.3**: Poor (significant issues)
-- **0.0**: Unacceptable (fails criterion)
-
-## Dataset Information
-
-- **Size**: 200 tasks, ~1.98 MB (parquet format)
-- **Splits**: train (all 200 tasks)
-- **Languages**: English ↔ Chinese (Simplified)
-- **Domains**: Academic papers, humanities, social sciences, technical documents
-
-### Data Columns
-
-- `prompt`: Translation instructions (Chinese)
+- `prompt`: Translation instructions
 - `ori_text`: Source text to translate
-- `reference_list`: Expert rubrics (Chinese, 考点 format)
+- `reference_list`: Expert rubrics used for grading (hidden from the agent)
 - `Primary_Domain`: Main content category
 - `Secondary_Domain`: Specific subdomain
 - `prompt_id`: Original task identifier
 
-## Technical Details
+## Tools
 
-### Architecture
+DiscoX provides a single tool:
 
-- **Pattern**: Single-turn environment with LLM-based grading
-- **Base Class**: `openreward.environments.Environment`
-- **Grading Model**: GPT-5-mini (no temperature parameter)
-- **Concurrency**: Async parallel rubric evaluation
+| Tool | Description |
+|------|-------------|
+| `submit_translation` | Submit a complete translation for evaluation. Takes a `translation` string parameter. Returns rubric-by-rubric feedback, overall score, and normalized reward (0.0-1.0). This call ends the episode. |
 
-### API Key Requirements
+## Time Horizon
 
-This environment requires an OpenAI API key for grading:
+DiscoX is a single-turn environment. The agent receives a translation prompt and submits one translation via the `submit_translation` tool, which ends the episode. Each task requires exactly one tool call.
 
-```python
-async with environment.session(
-    task=task,
-    secrets={"openai_api_key": "sk-..."}  # Required
-) as session:
-    ...
-```
+## Environment Difficulty
 
-### Error Handling
+Translation quality is evaluated against expert-designed rubrics covering terminology, semantics, cultural nuance, tone, and fluency. The tasks span specialized academic and technical domains, requiring domain-specific knowledge and professional translation skill.
 
-- Empty translations: Immediate validation error (reward=0.0)
-- API failures: Conservative fallback (score=0.0 with error message)
-- Score parsing failures: Multi-stage extraction with 0.0 default
-- Missing rubrics: Fallback to holistic quality assessment
+## Other Environment Requirements
 
-## Example Output
+This environment requires an OpenAI API key for LLM-based translation grading.
 
-```
-# Translation Evaluation Results
+## Safety
 
-**Task**: discox_001
-**Domain**: 学术论文 / 人文科学
-**Direction**: EN→ZH
+DiscoX evaluates translation quality using professional source texts from academic and technical domains. The environment does not present direct safety risks. Agents interact only with provided text and a grading API. Source texts are drawn from published academic papers and professional documents.
 
-**Overall Score**: 3.25 / 4.00
-**Normalized Reward**: 0.812
-
----
-
-## Rubric-by-Rubric Feedback
-
-### Rubric 1: 0.85 / 1.00
-**Criterion**: 考点1："Sensibility"推荐译为"感性"
-
-**Grader Analysis**:
-Analysis: The translation correctly uses "感性" for "Sensibility",
-demonstrating good terminology choice. Minor contextual refinement
-could improve clarity.
-Score: 0.85
-
----
-
-### Rubric 2: 0.90 / 1.00
-...
-```
-
-## Performance Considerations
-
-- **Grading Time**: ~2-4 seconds per task (depends on rubric count)
-- **Concurrency**: All rubrics evaluated in parallel
-- **Rate Limits**: Respect OpenAI API rate limits
-- **Cost**: ~$0.01-0.02 per task evaluation (GPT-5-mini pricing)
-
-## Citation
-
-If you use DiscoX in your research, please cite:
+## Citations
 
 ```bibtex
 @misc{discox2024,
-  title={DiscoX: A Professional Translation Benchmark with Expert Rubrics},
-  author={ByteDance-Seed},
-  year={2024},
-  howpublished={\url{https://huggingface.co/datasets/ByteDance-Seed/DiscoX}}
+  title     = {DiscoX: A Professional Translation Benchmark with Expert Rubrics},
+  author    = {ByteDance-Seed},
+  year      = {2024},
+  url       = {https://huggingface.co/datasets/ByteDance-Seed/DiscoX}
 }
 ```
-
-## License
-
-This environment implementation is released under the MIT License. The DiscoX dataset follows the original dataset's license terms.
-
-## Contributing
-
-Contributions welcome! Please submit issues or pull requests on GitHub.
-
-## Support
-
-For questions or issues:
-- GitHub Issues: https://github.com/EnvCommons/discox/issues
-- OpenReward Docs: https://docs.openreward.org/
