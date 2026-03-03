@@ -1,7 +1,6 @@
 # DiscoX
 
-[![⭐ OpenReward Environment](https://img.shields.io/badge/%E2%AD%90%20OpenReward-Environment-f7e6cc)](https://openreward.ai/GeneralReasoning/DiscoX)
-[![Hugging Face Dataset](https://img.shields.io/badge/Hugging%20Face-Dataset-orange)](https://huggingface.co/datasets/ByteDance-Seed/DiscoX)
+[![⭐ OpenReward Environment](https://img.shields.io/badge/%E2%AD%90%20OpenReward-Environment-f7e6cc)](https://openreward.ai/GeneralReasoning/DiscoX) [![Hugging Face Dataset](https://img.shields.io/badge/Hugging%20Face-Dataset-orange)](https://huggingface.co/datasets/ByteDance-Seed/DiscoX)
 
 ## Description
 
@@ -75,7 +74,7 @@ DiscoX is a single-turn environment. The agent receives a translation prompt and
 
 ## Environment Difficulty
 
-[Put environment difficulty here]
+The original paper finds that even the most advanced LLMs trail human experts on discourse-level translation tasks. The Metric-S evaluation system achieves 70.3% consistency with human judgments, significantly outperforming existing reference-free metrics like XCOMET-QE (34.7%).
 
 ## Other Environment Requirements
 
