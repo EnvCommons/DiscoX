@@ -74,7 +74,7 @@ DiscoX is a single-turn environment. The agent receives a translation prompt and
 
 ## Environment Difficulty
 
-The original paper finds that even the most advanced LLMs trail human experts on discourse-level translation tasks. The Metric-S evaluation system achieves 70.3% consistency with human judgments, significantly outperforming existing reference-free metrics like XCOMET-QE (34.7%).
+The original paper finds that even the strongest LLM (GPT-5-high) still lags behind professional human translators, particularly on discourse-heavy or domain-intensive texts. Performance diverges across dimensions: some models excel in accuracy, others in fluency, but none achieve balanced human-level competence. The Metric-S evaluation system achieves 70.3% consistency with human judgments, significantly outperforming existing reference-free metrics like XCOMET-QE (34.7%).
 
 ## Other Environment Requirements
 
