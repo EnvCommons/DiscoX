@@ -20,7 +20,7 @@ DiscoX is a single-turn environment with no special compute requirements. Each t
 
 ## License
 
-[ORLv1](https://openreward.ai/orlv1.md).
+[CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/).
 
 ## Tasks
 
@@ -75,7 +75,7 @@ DiscoX is a single-turn environment. The agent receives a translation prompt and
 
 ## Environment Difficulty
 
-Translation quality is evaluated against expert-designed rubrics covering terminology, semantics, cultural nuance, tone, and fluency. The tasks span specialized academic and technical domains, requiring domain-specific knowledge and professional translation skill.
+[Put environment difficulty here]
 
 ## Other Environment Requirements
 
@@ -85,7 +85,7 @@ This environment requires an OpenAI API key for LLM-based translation grading.
 
 DiscoX evaluates translation quality using professional source texts from academic and technical domains. The environment does not present direct safety risks. Agents interact only with provided text and a grading API. Source texts are drawn from published academic papers and professional documents.
 
-## Citations
+## Citation
 
 ```bibtex
 @misc{discox2024,
