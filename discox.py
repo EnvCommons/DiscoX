@@ -7,7 +7,7 @@ from typing import Any, List
 
 import openai
 import pandas as pd
-from openreward.environments import Environment, JSONObject, TextBlock, ToolOutput, tool
+from openreward.environments import Environment, JSONObject, TextBlock, ToolOutput, terminal, tool
 from pydantic import BaseModel, Field
 
 # --- Data loading (AIME pattern): load once at module import time ---
@@ -187,7 +187,7 @@ class DiscoX(Environment):
 
 ---
 
-Please provide your complete translation using the `submit_translation` tool.
+Please provide your complete translation as an ordinary message (no tool call). That message is graded.
 """
 
         return [TextBlock(text=prompt)]
@@ -263,9 +263,17 @@ Please provide your complete translation using the `submit_translation` tool.
         tasks = [self._grade_single_rubric(translation, r) for r in self.rubrics]
         return await asyncio.gather(*tasks)
 
+    @terminal
     @tool
     async def submit_translation(self, params: SubmitTranslationInput) -> ToolOutput:
-        """Submit translation for multi-rubric evaluation"""
+        """Grade the assistant's translation against the rubric checklist.
+
+        Terminal tool: hidden from the model, which replies with its complete
+        translation as an ordinary message rather than calling a tool. The
+        harness routes that message text here for multi-rubric LLM grading
+        (gpt-5-mini). Since this is the environment's only tool, the model is
+        given no tools at all.
+        """
 
         translation = params.translation.strip()
 

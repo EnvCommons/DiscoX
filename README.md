@@ -66,11 +66,13 @@ DiscoX provides a single tool:
 
 | Tool | Description |
 |------|-------------|
-| `submit_translation` | Submit a complete translation for evaluation. Takes a `translation` string parameter. Returns rubric-by-rubric feedback, overall score, and normalized reward (0.0-1.0). This call ends the episode. |
+None. The model is given no tools: it replies with its translation as an ordinary message, and that message ends the rollout.
+
+Grading runs through a hidden `@terminal` tool, which routes the message text to a multi-rubric LLM judge (gpt-5-mini) and returns the normalized reward (0.0-1.0).
 
 ## Time Horizon
 
-DiscoX is a single-turn environment. The agent receives a translation prompt and submits one translation via the `submit_translation` tool, which ends the episode. Each task requires exactly one tool call.
+DiscoX is a single-turn environment. The agent receives a translation prompt and replies with its complete translation as an ordinary message, which ends the episode.
 
 ## Environment Difficulty
 
